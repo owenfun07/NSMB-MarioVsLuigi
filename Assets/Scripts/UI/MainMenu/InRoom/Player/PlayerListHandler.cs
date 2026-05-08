@@ -1,5 +1,4 @@
 using NSMB.Networking;
-using NSMB.Utilities.Extensions;
 using Photon.Client;
 using Photon.Realtime;
 using Quantum;
@@ -67,10 +66,7 @@ namespace NSMB.UI.MainMenu.Submenus.InRoom {
         public unsafe void PopulatePlayerEntries(Frame f) {
             RemoveAllPlayerEntries();
 
-            var playerDataFilter = f.Filter<PlayerData>();
-            playerDataFilter.UseCulling = false;
-
-            while (playerDataFilter.NextUnsafe(out _, out PlayerData* playerData)) {
+            foreach ((_, var playerData) in f.Unsafe.GetComponentBlockIterator<PlayerData>()) {
                 AddPlayerEntry(f, playerData->PlayerRef);
             }
         }
@@ -173,13 +169,13 @@ namespace NSMB.UI.MainMenu.Submenus.InRoom {
         private void OnPlayerAdded(EventPlayerAdded e) {
             Frame f = e.Game.Frames.Verified;
             AddPlayerEntry(f, e.Player);
-            GlobalController.Instance.sfx.PlayOneShot(SoundEffect.UI_PlayerConnect);
+            GlobalController.Instance.PlaySound(SoundEffect.UI_PlayerConnect);
         }
 
         private void OnPlayerRemoved(EventPlayerRemoved e) {
             Frame f = e.Game.Frames.Verified;
             RemovePlayerEntry(f, e.Player);
-            GlobalController.Instance.sfx.PlayOneShot(SoundEffect.UI_PlayerDisconnect);
+            GlobalController.Instance.PlaySound(SoundEffect.UI_PlayerDisconnect);
         }
 
         private void OnGameStateChanged(EventGameStateChanged e) {

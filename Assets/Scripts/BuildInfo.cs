@@ -1,1 +1,5 @@
-public static class BuildInfo{public static string BUILD_TIME = "8/20/2025 11:47:17 PM";}
+using System;
+
+public static class BuildInfo {
+	public static readonly DateTime BUILD_TIME = DateTime.Parse("2026-04-24T01:17:35.4916170Z");
+}

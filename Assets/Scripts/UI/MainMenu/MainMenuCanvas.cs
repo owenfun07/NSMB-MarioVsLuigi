@@ -20,6 +20,7 @@ namespace NSMB.UI.MainMenu {
 
         //---Properties
         public static MainMenuCanvas Instance { get; private set; }
+        public List<ISoundOverrideProvider> SfxProviders => sfxProviders;
         public List<MainMenuSubmenu> SubmenuStack => submenuStack;
         public Color HeaderColor => headerImage.color;
         public EventSystem EventSystem => eventSystem;
@@ -40,7 +41,9 @@ namespace NSMB.UI.MainMenu {
         //---Private Variables
         private readonly List<MainMenuSubmenu> allSubmenus = new();
         private readonly List<MainMenuSubmenu> submenuStack = new();
+        private readonly List<ISoundOverrideProvider> sfxProviders = new();
         private Color defaultHeaderColor;
+        private StringBuilder headerBuilder = new();
 
         public void OnValidate() {
             this.SetIfNull(ref sfx);
@@ -48,6 +51,7 @@ namespace NSMB.UI.MainMenu {
 
         public void OnEnable() {
             Settings.Controls.UI.Enable();
+            GlobalController.Instance.fader.FadeBehindUi = false;
         }
 
         public void OnDisable() {
@@ -104,8 +108,7 @@ namespace NSMB.UI.MainMenu {
         }
 
         public void UpdateHeader() {
-            StringBuilder builder = new();
-
+            headerBuilder.Clear();
             bool showHeader = false;
             Color? newHeaderColor = null;
 
@@ -115,16 +118,16 @@ namespace NSMB.UI.MainMenu {
             foreach (var menu in submenus) {
                 showHeader |= menu.ShowHeader;
                 if (!string.IsNullOrEmpty(menu.Header)) {
-                    builder.Append(menu.Header).Append(headerSeparation);
+                    headerBuilder.Append(menu.Header).Append(headerSeparation);
                 }
                 if (menu.HeaderColor.HasValue) {
                     newHeaderColor = menu.HeaderColor;
                 }
             }
 
-            if (builder.Length > 0) {
-                builder.Remove(builder.Length - headerSeparation.Length, headerSeparation.Length);
-                headerPath.text = builder.ToString();
+            if (headerBuilder.Length > 0) {
+                headerBuilder.Remove(headerBuilder.Length - headerSeparation.Length, headerSeparation.Length);
+                headerPath.text = headerBuilder.ToString();
                 headerPath.horizontalAlignment = rtl ? HorizontalAlignmentOptions.Right : HorizontalAlignmentOptions.Left;
             }
 
@@ -230,8 +233,12 @@ namespace NSMB.UI.MainMenu {
             ShowHideMainPanel();
         }
 
-        public void PlaySound(SoundEffect sound, CharacterAsset character = null) {
-            sfx.PlayOneShot(sound, character);
+        public IList<AudioClip> PlaySound(SoundEffect sound) {
+            return sfx.PlayOneShot(sound);
+        }
+
+        public IList<AudioClip> PlaySound(SoundEffect sound, IList<ISoundOverrideProvider> extraProviders, int? variant = null, float volume = 1) {
+            return sfx.PlayOneShot(sound, extraProviders, variant, volume);
         }
 
         public void PlayConfirmSound() {

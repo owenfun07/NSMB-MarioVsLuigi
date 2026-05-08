@@ -38,7 +38,7 @@ namespace NSMB.Entities.World {
 
         public override unsafe void OnActivate(Frame f) {
             if (f.Global->GameState == GameState.Playing && !IsReplayFastForwarding) {
-                GlobalController.Instance.sfx.PlayOneShot(SoundEffect.World_Star_Spawn);
+                sfx.PlayOneShot(SoundEffect.World_Star_Spawn);
             }
             StarCoinInitialized?.Invoke(f, this);
         }
@@ -57,7 +57,7 @@ namespace NSMB.Entities.World {
                 sfx.PlayOneShot(SoundEffect.World_Starcoin_Store);
             }
             mRenderer.enabled = false;
-            Destroy(gameObject, SoundEffect.World_Starcoin_Store.GetClip().length + 1);
+            Destroy(gameObject, 2);
             StarCoinDestroyed?.Invoke(VerifiedFrame, this);
         }
 
@@ -73,8 +73,8 @@ namespace NSMB.Entities.World {
 
         private bool IsCollectedByCameraFocus(EntityRef entity, Camera camera) {
             foreach (var playerElement in PlayerElements.AllPlayerElements) {
-                if (camera == playerElement.Camera || camera == playerElement.ScrollCamera || camera == playerElement.UICamera) {
-                    return playerElement.Entity == entity;
+                if (playerElement.Entity == entity && playerElement.IsOurCamera(camera)) {
+                    return true;
                 }
             }
             return false;
@@ -90,7 +90,7 @@ namespace NSMB.Entities.World {
             if (!IsReplayFastForwarding) {
                 sfx.Play();
                 if (!IsMarioLocal(e.Entity)) {
-                    GlobalController.Instance.sfx.PlayOneShot(SoundEffect.World_Star_CollectOthers);
+                    sfx.PlayOneShot(SoundEffect.World_Star_CollectOthers);
                 }
             }
             collected = true;
